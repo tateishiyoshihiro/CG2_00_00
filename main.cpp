@@ -1,5 +1,7 @@
 #include <Windows.h>
 #include<cstdint>
+#include<string>
+#include<format>
 //ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	//メッセージに応じてゲーム固有の処理を行う
@@ -13,6 +15,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	//標準のメッセージ処理を行う
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+void Log(const std::string& message) {
+	OutputDebugStringA(message.c_str());
+}
+void Log(const std::wstring& message) {
+	OutputDebugStringW(message.c_str());
+}
+//
+std::wstring ConvertString(const std::string& str);
+//
+std::string ConvertString(const std::wstring& str);
+
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	WNDCLASS wc{};
