@@ -5,6 +5,8 @@
 #include<d3d12.h>
 #include<dxgi1_6.h>
 #include<cassert>
+#include<dxgidebug.h>
+#pragma comment(lib,"dxguid.lib")
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -51,19 +53,12 @@ std::string ConvertString(const std::wstring& str) {
 	return result;
 }
 
-
-
 void Log(const std::string& message) {
 	OutputDebugStringA(message.c_str());
 }
 void Log(const std::wstring& message) {
 	OutputDebugStringW(message.c_str());
 }
-////
-//std::wstring ConvertString(const std::string& str);
-////
-//std::string ConvertString(const std::wstring& str);
-
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	WNDCLASS wc{};
@@ -305,7 +300,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
 	commandQueue->Signal(fence, fenceValue);
 	//FenceのあたいがしていしたSignal値にたどり着いているか確認する
-	//
+	//GetCompletedValueの初期値はFence作成時に渡した初期値
+	if (fence->GetCompletedValue() < fenceValue) {
+		//指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+		//イベント待つ
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
 
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -317,6 +318,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		else {
 			//ゲームの処理
 		}
+
 	}
+	//解放処理
+	CloseHandle(fenceEvent);
+	fence->Release();
+	rtvDescriptorHeap->Release();
+	swapChainResources[0]->Release();
+	swapChainResources[1]->Release();
+	swapChain->Release();
+	commandList->Release();
+	commandAllocator->Release();
+	commandQueue->Release();
+	device->Release();
+	useAdapter->Release();
+	dxgiFactory->Release();
+#ifdef _DEBUG
+	debugController->Release();
+#endif
+	CloseWindow(hwnd);
+	//リソースリークチェック
+	IDXGIDebug1* debug;
+	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+		debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
+		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
+
+		debug->Release();
+	}
+
 	return 0;
 }
