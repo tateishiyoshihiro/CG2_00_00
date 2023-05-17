@@ -7,6 +7,8 @@
 #include<cassert>
 #include<dxgidebug.h>
 #pragma comment(lib,"dxguid.lib")
+#include<dxcapi.h>
+#pragma comment(lib,"dxcompiler.lib")
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -307,6 +309,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//イベント待つ
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
+	//dxcCompilerを初期化
+	IDxcUtils* dxcUtils = nullptr;
+	IDxcCompiler3* dxcCompiler = nullptr;
+	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
+	assert(SUCCEEDED(hr));
+	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
+	assert(SUCCEEDED(hr));
+
+	//現時点でincludeはしないが、includeに対応するための設定を行っておく
+	IDxcIncludeHandler* includeHandler = nullptr;
+	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
+	assert(SUCCEEDED(hr));
 
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
