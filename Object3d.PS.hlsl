@@ -1,3 +1,4 @@
+#include "object3d.hlsli"
 struct Material {
 	float32_t4 color;
 };
@@ -10,3 +11,4 @@ PixelShaderOutput main() {
 	output.color = gMaterial.color;
 	return output;
 }
+output.texcoord = input.texcoord;
