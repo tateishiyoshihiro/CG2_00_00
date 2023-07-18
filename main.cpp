@@ -19,7 +19,7 @@
 #include "externals/imgui/imgui_impl_win32.h"
 
 #include "externals/DirectXTex/DirectXTex.h"
-
+#include "object3d.hlsli"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 

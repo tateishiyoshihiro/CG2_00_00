@@ -6,9 +6,10 @@ ConstantBuffer<Material>gMaterial:register(b0);
 struct PixelShaderOutput {
 	float32_t4 color : SV_TARGET0;
 };
-PixelShaderOutput main() {
+PixelShaderOutput main(VertexShaderOutput input) {
 	PixelShaderOutput output;
 	output.color = gMaterial.color;
+	output.texcoord = input.texcoord;
 	return output;
 }
-output.texcoord = input.texcoord;
+
