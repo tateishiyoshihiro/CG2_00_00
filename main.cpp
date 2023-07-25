@@ -656,7 +656,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 	//頂点リソース用のヒープの設定
 	D3D12_HEAP_PROPERTIES uplodHeapProperties{};
-	uplodHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;//UploadHeapを使う
+	uplodHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;//UploadHeapを使うぞ
 
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 3);
 	//頂点バッファビューを作成する
