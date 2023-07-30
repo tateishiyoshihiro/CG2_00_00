@@ -664,6 +664,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::End();
 
 			ImGui::Render();
+
 			*materialData = color;
 			
 			//実際のcommandListのImGuiの描画コマンドを積む
