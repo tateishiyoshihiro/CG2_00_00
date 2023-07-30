@@ -614,16 +614,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			transform.rotate.y += 0.03f;
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			*wvpData = worldMatrix;
-			//開発用のUIの処理、実際に開発用のUIを出す場合はここをゲーム固有の処理に置き換える
-			ImGui::Begin("window");
-			ImGui::ColorEdit3("color 1", &color.x);
-			*materialData = color;
-
-			ImGui::SetWindowSize({ 200,100 });
-			ImGui::End();
-
-			ImGui::Render();
-
+			
 			// これから書き込むバックバッファのインデックスを取得
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 			//TransitionBarrierの設定
@@ -666,6 +657,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetDescriptorHeaps(1, descriptorHeaps);
 			//描画（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(3, 1, 0, 0);
+			//開発用のUIの処理、実際に開発用のUIを出す場合はここをゲーム固有の処理に置き換える
+			ImGui::Begin("window");
+			ImGui::ColorEdit3("color 1", &color.x);
+			ImGui::SetWindowSize({ 200,100 });
+			ImGui::End();
+
+			ImGui::Render();
+			*materialData = color;
 			
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
@@ -706,9 +705,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 	//解放処理
 	CloseHandle(fenceEvent);
+
 	fence->Release();
 	rtvDescriptorHeap->Release();
-
 	swapChainResources[0]->Release();
 	swapChainResources[1]->Release();
 	swapChain->Release();
@@ -719,25 +718,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	useAdapter->Release();
 	dxgiFactory->Release();
 	materialResource->Release();
-	wvpResource->Release();
 #ifdef _DEBUG
 	debugController->Release();
+#endif // _DEBUG
+	CloseWindow(hwnd);
+
+
 	vertexResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
-	if (errorBlob) {
+	wvpResource->Release();
+	if (errorBlob)
+	{
 		errorBlob->Release();
 	}
 	rootSignature->Release();
 	pixelShaderBlob->Release();
 	vertexShaderBlob->Release();
+
 	//実際のcommandListのImGuiの描画コマンドを積む
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
-#endif
+
+#ifdef _DEBUG
+	debugController->Release();
+#endif // _DEBUG
 	CloseWindow(hwnd);
-	//リソースリークチェック
+	//リリースチェック
 	IDXGIDebug1* debug;
-	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug))))
+	{
 		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 		debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
 		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
