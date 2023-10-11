@@ -254,6 +254,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 }
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+	CoInitializeEx(0, COINIT_MULTITHREADED);
 	WNDCLASS wc{};
 	//ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
@@ -456,7 +457,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 	//RootParameter作成。複数設定できるので配列今回は結果1つだけなので長さ1の配列
-	//D3D12_ROOT_PARAMETER rootParameters[1] = {};
+	//D3D12_ROOT_PARAMETER rootParameters[2] = {};
 	//rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
 	//rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	//rootParameters[0].Descriptor.ShaderRegister = 0;//レジスタ番号0とバインド
@@ -498,6 +499,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_BLEND_DESC blendDesc{};
 	//全ての色要素を書き込む
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	//CG3_00_01ここから追加
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	//	CG3_00_01ここまで
 	//RasiterzerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	//裏面(時計回り)を表示しない
@@ -632,8 +642,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//TransitionBarrierを張る
 			commandList->ResourceBarrier(1, &barrier);
 
-			//ImGuiの内部コマンドを生成する
-			ImGui::Render();
 
 			// 描画先のRTVを設定する
 			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
@@ -659,7 +667,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->DrawInstanced(3, 1, 0, 0);
 			//開発用のUIの処理、実際に開発用のUIを出す場合はここをゲーム固有の処理に置き換える
 			ImGui::Begin("window");
-			ImGui::ColorEdit3("color 1", &color.x);
+			//ImGui::ColorEdit3("color 1", &color.x);
+			ImGui::ColorEdit4("Intensity",&color.x);
 			ImGui::SetWindowSize({ 200,100 });
 			ImGui::End();
 
@@ -704,9 +713,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		}
 	}
+	CoUninitialize();
+
 	//解放処理
 	CloseHandle(fenceEvent);
-
+	materialResource->Release();
 	fence->Release();
 	rtvDescriptorHeap->Release();
 	swapChainResources[0]->Release();
@@ -718,7 +729,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->Release();
 	useAdapter->Release();
 	dxgiFactory->Release();
-	materialResource->Release();
+	
 #ifdef _DEBUG
 	debugController->Release();
 #endif // _DEBUG
@@ -736,9 +747,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootSignature->Release();
 	pixelShaderBlob->Release();
 	vertexShaderBlob->Release();
-
-	//実際のcommandListのImGuiの描画コマンドを積む
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
 #ifdef _DEBUG
 	debugController->Release();
