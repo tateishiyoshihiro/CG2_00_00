@@ -3,7 +3,7 @@ struct TransfomationMatrix
 {
     float32_t4x4 WVP;
 };
-StructuredBuffer<TransfomationMatrix> gTransformationMatrix : register(b0);
+StructuredBuffer<TransfomationMatrix> gTransformationMatrix : register(t0);
 
 struct VertexShaderInput
 {
@@ -18,7 +18,3 @@ VertexShaderOutput main(VertexShaderInput input)
     return output;
 }
 
-float4 main( float4 pos : POSITION ) : SV_POSITION
-{
-	return pos;
-}
