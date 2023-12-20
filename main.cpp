@@ -716,7 +716,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 	inputElementDescs[1].SemanticName = "TEXCOORD";
 	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
@@ -803,24 +803,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->CreateDepthStencilView(depthStencilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	//左下
-	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	//上
-	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
-	vertexData[1].texcoord = { 0.5f,0.0f };
+	//左上
+	vertexData[0].position = { -0.5f,0.5f,0.0f,1.0f };
+	vertexData[0].texcoord = { 0.0f,0.0f };
+	//右上
+	vertexData[1].position = { 0.5f,0.5f,0.0f,1.0f };
+	vertexData[1].texcoord = { 1.0f,0.0f };
 	//右下
 	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
 	vertexData[2].texcoord = { 1.0f,1.0f };
-	//左下
-	vertexData[3].position = { -0.5f,-0.5f,0.0f,1.0f };
-	vertexData[3].texcoord = { 0.0f,1.0f };
-	//上
-	vertexData[4].position = { 0.0f,0.5f,0.0f,1.0f };
-	vertexData[4].texcoord = { 0.5f,0.0f };
+
+
+	//左上
+	vertexData[3].position = { -0.5f,0.5f,0.0f,1.0f };
+	vertexData[3].texcoord = { 0.0f,0.0f };
 	//右下
-	vertexData[5].position = { 0.5f,-0.5f,0.0f,1.0f };
-	vertexData[5].texcoord = { 1.0f,1.0f };
+	vertexData[4].position = { 0.5f,-0.5f,0.0f,1.0f };
+	vertexData[4].texcoord = { 1.0f,1.0f };
+	//左下
+	vertexData[5].position = { -0.5f,-0.5f,0.0f,1.0f };
+	vertexData[5].texcoord = { 0.0f,1.0f };
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
@@ -990,6 +992,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
 			//
 			commandList->DrawInstanced(6, kNumInstance, 0, 0);
+			//
+			//commandList->DrawInstanced(UINT(),instanceCount);
 			//開発用のUIの処理、実際に開発用のUIを出す場合はここをゲーム固有の処理に置き換える
 			ImGui::Begin("window");
 			//ImGui::ColorEdit3("color 1", &color.x);
